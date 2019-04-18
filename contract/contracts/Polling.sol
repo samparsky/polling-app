@@ -2,16 +2,15 @@ pragma solidity >=0.4.21 <0.6.0;
 
 contract Polling {
 
-    enum Status { PREVOTE, ONGOING, CONCLUDED };
-
     struct Initiative {
+        uint initiativeId;
         string initiativeTitle; // very short description of what is being voted on
         uint expiryTime;
         uint number_of_votes_allowed;
         uint[] ballotOptions; // integer representation of available voting options
         bool allowAnyone;
         bool exists;
-    };
+    }
 
     struct Organisation {
         address creator;
@@ -19,30 +18,25 @@ contract Polling {
         bool exists;
     }
 
-    struct Constitutent {
-        uint orgId;
-        adddress constituent;
-    }
-
     modifier allowOnlyOrgOwner(orgId) {
         require(msg.sender == organisations[orgId].creator);
         _;
-    } 
+    }
+
     // array of created organisations
     Organisation[] organisations;
-    // list of constituents
-    mapping(Constitutent => bool) constituents;
-    mapping(uint => []intiative) intiatives;
+    // mapping of orgId to org intiatives
+    mapping(uint => intiative[]) intiatives;
+    // mapping of constituent address to orgId to exists
+    mapping(address => mapping(uint => bool)) constituents;
     // mapping of orgId to intiativeId to totalVotes
     mapping(uint => mapping(uint => uint)) totalVotes;
     // mapping of orgId to intiativeId to ballotOption and vote
-    mapping(uint => mapping(uint => mapping(uint => uint)) votes;
+    mapping(uint => mapping(uint => mapping(uint => uint))) votes;
 
     /**
     * An address can create multiple organisations
-    *
-    *
-     */
+    */
     function createOrgranisation() public {
         address creator = msg.sender;
         uint orgId = organisations.length;
@@ -137,7 +131,7 @@ contract Polling {
             require(isOrgConstituent(address _constituent, uint _orgId), 'only org constituents are allowed to vote');
         }
 
-        require(initative.exists == true, 'intiative does not exist' );
+        require(initative.exists == true && initative., 'intiative does not exist' );
         // check if time has not expired
         require(initative.expiryTime > now, 'voting period has expired');
         // check if it doesn't exceed the number of votes allowed

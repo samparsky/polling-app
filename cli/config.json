@@ -1,0 +1,21 @@
+{
+    "version": "0.0.1",
+    "default": {
+        "blockchain": "ethereum"
+    },
+    "keystore": {
+        "ethereum": "",
+        "eos": ""
+    },
+    "gateway": {
+        "ethereum": {
+            "createOrganisation": "http://",
+            "broadcast": "http",
+            "add_constituent": "",
+            "remove_constituent": "",
+            "add_initiative": "",
+            "vote": "",
+            "get_result": ""
+        }
+    }
+}
