@@ -34,9 +34,6 @@ contract Polling {
     // mapping of orgId to intiativeId to ballotOption and vote
     mapping(uint => mapping(uint => mapping(uint => uint))) votes;
 
-    /**
-    * An address can create multiple organisations
-    */
     function createOrgranisation() public {
         address creator = msg.sender;
         uint orgId = organisations.length;
@@ -131,7 +128,7 @@ contract Polling {
             require(isOrgConstituent(address _constituent, uint _orgId), 'only org constituents are allowed to vote');
         }
 
-        require(initative.exists == true && initative., 'intiative does not exist' );
+        require(initative.exists == true && initative.initiativeId == _initiativeId, 'intiative does not exist' );
         // check if time has not expired
         require(initative.expiryTime > now, 'voting period has expired');
         // check if it doesn't exceed the number of votes allowed
