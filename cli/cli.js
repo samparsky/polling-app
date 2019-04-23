@@ -14,7 +14,7 @@ program
 
 
 function createOrganisation() {
-  const tx = //
+  // const tx = //
   
   // sign 
 
