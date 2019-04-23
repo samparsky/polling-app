@@ -10,3 +10,13 @@ program
   .command('add_initiative')
   .command('vote')
   .command('get_result')
+
+
+
+function createOrganisation() {
+  const tx = //
+  
+  // sign 
+
+  // broadcast
+}

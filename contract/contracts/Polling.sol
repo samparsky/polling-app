@@ -18,21 +18,24 @@ contract Polling {
         bool exists;
     }
 
-    modifier allowOnlyOrgOwner(orgId) {
+    modifier allowOnlyOrgOwner(uint orgId) {
         require(msg.sender == organisations[orgId].creator);
         _;
     }
 
-    // array of created organisations
-    Organisation[] organisations;
-    // mapping of orgId to org intiatives
-    mapping(uint => intiative[]) intiatives;
     // mapping of constituent address to orgId to exists
     mapping(address => mapping(uint => bool)) constituents;
     // mapping of orgId to intiativeId to totalVotes
     mapping(uint => mapping(uint => uint)) totalVotes;
     // mapping of orgId to intiativeId to ballotOption and vote
     mapping(uint => mapping(uint => mapping(uint => uint))) votes;
+     // mapping of orgId to org intiatives
+    mapping(uint => Initiative[]) intiatives;
+    // mapping of orgId to initiativeid to constituent to have voted
+    mapping(uint => mapping(uint => mapping(address => bool ))) voted;
+
+    // array of created organisations
+    Organisation[] organisations;
 
     function createOrgranisation() public {
         address creator = msg.sender;
@@ -40,23 +43,18 @@ contract Polling {
         
         Organisation memory newOrganisation = Organisation(
             creator,
-            orgId
+            orgId,
+            true
         );
         
-        organsiations.push(newOrganisation);
+        organisations.push(newOrganisation);
         emit CreateOrganisation(creator, orgId);
     }
     
-    function addConstituent(uint _organisationId, address[] _constituents) allowOnlyOrgOwner(_organisationId) public {
+    function addConstituent(uint _organisationId, address[] memory _constituents) allowOnlyOrgOwner(_organisationId) public {
         for (uint i = 0; i < _constituents.length; i++) {
             address constituent = _constituents[i];
-
-            Constitutent memory newConstituent = Constitutent(
-                _organisationId,
-                constituent
-            );
-
-            constituents[newConstituent] = true;
+            constituents[constituent][_organisationId] = true;
         }
 
         emit AddConstituent(
@@ -66,14 +64,10 @@ contract Polling {
     }
 
     function removeConstituent(uint _organisationId, address _constituent) allowOnlyOrgOwner(_organisationId) public {
-        Constitutent memory constituent = Constitutent(
-                _organisationId,
-                _constituent
-        );
-        require(constituents[constituent] == true, 'constituent doest not exist');
+        require(constituents[_constituent][_organisationId] == true, 'constituent doest not exist');
         
         // remove constituent
-        delete constituents[constituent];
+        constituents[_constituent][_organisationId] = false;
 
         emit RemoveConstituent(
             _organisationId,
@@ -83,8 +77,8 @@ contract Polling {
 
     function addInitiative( 
         uint _organisationId,  
-        string _initiativeTitle,  
-        uint[] _ballotOptions,
+        string memory _initiativeTitle,  
+        uint[] memory _ballotOptions,
         uint _expiryTime, 
         uint _number_of_votes_allowed,
         bool _allowAnyOne
@@ -102,7 +96,7 @@ contract Polling {
             _number_of_votes_allowed,
             _ballotOptions,
             _allowAnyOne,
-            true,
+            true
         );
 
         // store
@@ -114,25 +108,29 @@ contract Polling {
             _initiativeTitle,
             _expiryTime,
             _number_of_votes_allowed,
-            _ballotOptions,
+            _ballotOptions
         );
     }
 
     function vote(uint _orgId, uint _initiativeId, uint _choice) public {
         // check if initiave exists
-        Initiative storage initative = intiatives[_orgId][_initiativeId];
-        uint[] ballotOptions = initative.ballotOptions;
+        Initiative storage initiative = intiatives[_orgId][_initiativeId];
+        uint[] storage ballotOptions = initiative.ballotOptions;
+        address constituent = msg.sender;
+
+        // check has not voted
+        require(voted[_orgId][_initiativeId][constituent] == false, 'you can only vote once');
 
         if(initiative.allowAnyone == false) {
             // check if the initiate allows anyone or just constituents
-            require(isOrgConstituent(address _constituent, uint _orgId), 'only org constituents are allowed to vote');
+            require(isOrgConstituent(initiative, constituent, _orgId), 'only org constituents are allowed to vote');
         }
 
-        require(initative.exists == true && initative.initiativeId == _initiativeId, 'intiative does not exist' );
+        require(initiative.exists == true && initiative.initiativeId == _initiativeId, 'intiative does not exist' );
         // check if time has not expired
-        require(initative.expiryTime > now, 'voting period has expired');
+        require(initiative.expiryTime > now, 'voting period has expired');
         // check if it doesn't exceed the number of votes allowed
-        uint number_of_votes_allowed = initative.number_of_votes_allowed;
+        uint number_of_votes_allowed = initiative.number_of_votes_allowed;
         if(number_of_votes_allowed > 0 ){
             require(totalVotes[_orgId][_initiativeId] < number_of_votes_allowed, 'cannot exceed allowed votes');
         }
@@ -143,9 +141,13 @@ contract Polling {
         votes[_orgId][_initiativeId][_choice] += 1;
         // increase total vote
         totalVotes[_orgId][_initiativeId] += 1;
+        // has voted
+        voted[_orgId][_initiativeId][constituent] = true;
+
+        emit Vote(true);
     }
 
-    function getInitiativeResult(uint _orgId, uint initiativeId) public returns(uint[], uint[]) {
+    function getInitiativeResult(uint _orgId, uint _initiativeId) public view returns(uint[] memory, uint[] memory) {
         Initiative storage initative = intiatives[_orgId][_initiativeId];   
         uint[] storage ballotOptions = initative.ballotOptions;
 
@@ -156,18 +158,18 @@ contract Polling {
             ballotResult[i] = votes[_orgId][_initiativeId][ballotOptions[i]];
         }
         
-        return ballotOptions, ballotResult
+        return (ballotOptions, ballotResult);
     }
 
-    function isOrgConstituent(address _constituent, uint _orgId) internal pure returns(bool){
-        Constitutent memory constituent = Constitutent(
-                _organisationId,
-                _constituent
-        );
-        return constituents[constituent];
+    function isOrgConstituent(Initiative memory initiative, address _constituent, uint _organisationId) internal view returns(bool){
+        if(initiative.allowAnyone) {
+            return true;
+        }
+
+        return constituents[_constituent][_organisationId];
     }
 
-    function partOfBallotOptions(uint[] ballotOptions, uint choice) internal pure returns(bool) {
+    function partOfBallotOptions(uint[] memory ballotOptions, uint choice) internal pure returns(bool) {
         bool exists = false;
         for(uint i = 0; i < ballotOptions.length; i++) {
             if(choice == ballotOptions[i]) {
@@ -180,7 +182,7 @@ contract Polling {
 
     event CreateOrganisation(
         address indexed creator,
-        uint orgId
+        uint organisationId
     );
 
     event AddConstituent(
@@ -189,8 +191,12 @@ contract Polling {
     );
 
     event RemoveConstituent(
-        uint indexed _organisationId,
-        address _constituent
+        uint indexed organisationId,
+        address constituent
+    );
+
+    event Vote(
+        bool success
     );
 
     event AddInitiative(
@@ -199,7 +205,7 @@ contract Polling {
         string initiativeTitle,
         uint expiryTime,
         uint number_of_votes_allowed,
-        uint[] _ballotOptions,
+        uint[] _ballotOptions
     );
 
 
