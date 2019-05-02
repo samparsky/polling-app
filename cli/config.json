@@ -1,11 +1,16 @@
 {
     "version": "0.0.1",
-    "default": {
-        "blockchain": "ethereum"
-    },
+    "chain": "ethereum",
     "keystore": {
-        "ethereum": "",
-        "eos": ""
+        "ethereum": null,
+        "eos": null
+    },
+    "contractAddress": {
+        "ethereum": {
+            "testnet": "",
+            "rinkeby": "",
+            "mainnet": ""
+        }
     },
     "gateway": {
         "ethereum": {
