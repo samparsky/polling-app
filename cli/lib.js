@@ -27,7 +27,7 @@ module.exports = function( httpProvider, websocketProvider, contractAddress ) {
             filter,
         }, function(error, event) {
             spinner.stop();
-            spinner.clearLine()net
+            spinner.clearLine()
 
             if(error){
                 logError(error)
