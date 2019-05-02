@@ -1,32 +1,26 @@
-const ethers = require('ethers')
 const fdk=require('@autom8/fdk');
 const a8=require('@autom8/js-a8-fdk')
+const fetch = require('node-fetch')
 const Web3 = require('web3')
-const abi = require('adex-protocol-eth/abi/AdExCore.json')
+const abi = require('./Polling.json')
 
-const contractAddress = ''
-const web3 = new Web3(new Web3.providers.HttpProvider("https://ropsten.infura.io/<REDACTED API KEY"));
+fdk.handle(function({ account, contractAddress, provider } ){
+  const web3 = new Web3(new Web3.providers.HttpProvider(provider))
 
-fdk.handle(function(input ){
-  const { account } = input
-  // gas limit
-  // gas estimate
-  
+  // get gas price
+  const { fast } = await fetch('https://ethgasstation.info/json/ethgasAPI.json').then(res => res.json())
+  const nonce = await web3.eth.getTransactionCount(account)
+  const pollingContract = new web3.eth.Contract(abi, contractAddress, { gasPrice: fast, defaultAccount: account })
+  const calldata = await pollingContract.methods.createOrganisation().encodeABI()
+  const gasLimit = await pollingContract.methods.createOrganisation().estimateGas()
 
-  const nonce = web3.eth.getTransactionCount(account)
-  let provider = ethers.getDefaultProvider();
-  let contract = new ethers.Contract(contractAddress, abi, provider);
-
-  const txParams = {
-    nonce: nonce,
-    gasPrice: '0x09184e72a000', 
-    gasLimit: '0x2710',
-    to: '0x0000000000000000000000000000000000000000', 
-    value: '0x00', 
-    data: '0x7f7465737432000000000000000000000000000000000000000000000000000000600057',
-    // EIP 155 chainId - mainnet: 1, ropsten: 3
-    chainId: 3
+  return {
+      nonce,
+      gasPrice: fast,
+      gasLimit,
+      to: contractAddress,
+      value: '0x00', 
+      data: calldata,
+      chainId: 1337
   }
-
-  return { 'unsignedTx': transaction }
 })

@@ -37,7 +37,7 @@ contract Polling {
     // array of created organisations
     Organisation[] organisations;
 
-    function createOrgranisation() public {
+    function createOrganisation() public {
         address creator = msg.sender;
         uint orgId = organisations.length;
         
@@ -144,7 +144,7 @@ contract Polling {
         // has voted
         voted[_orgId][_initiativeId][constituent] = true;
 
-        emit Vote(true);
+        emit Vote(_orgId, constituent, true);
     }
 
     function getInitiativeResult(uint _orgId, uint _initiativeId) public view returns(uint[] memory, uint[] memory) {
@@ -196,6 +196,8 @@ contract Polling {
     );
 
     event Vote(
+        uint indexed organisationId,
+        address indexed voter,
         bool success
     );
 

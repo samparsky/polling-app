@@ -13,11 +13,12 @@ contract('Polling', (accounts) => {
 
     const constituents = [constituent1, constituent2]
 
-    const createOrgranisation = async () => await polling.createOrgranisation({from: creator})
+    const createOrganisation = async () => await polling.createOrganisation({from: creator})
     const addConstituents = async (organisationId) => await polling.addConstituent(organisationId, constituents, { from: creator})
 
     before(async() => {
         polling = await Polling.deployed()
+        console.log({ polling })
         // snapId = await takeSnapshot();
     })
 
@@ -27,13 +28,13 @@ contract('Polling', (accounts) => {
       })
 
     it('should create organisation', async() => {
-        const tx = await createOrgranisation()
+        const tx = await createOrganisation()
         assert.equal(tx.logs[0].args.organisationId, 0, "failed to create organisation");
     })
 
     it('should add constituent to organisation', async() => {
         // create organisation
-        const tx = await createOrgranisation()
+        const tx = await createOrganisation()
         const { organisationId } = tx.logs[0].args
 
         // add constituent 
@@ -45,7 +46,7 @@ contract('Polling', (accounts) => {
 
     it('should remove constituent from organisation', async() => {
         // create organisation
-        const tx = await createOrgranisation()
+        const tx = await createOrganisation()
         const { organisationId } = tx.logs[0].args
 
         // add constituent 
@@ -61,7 +62,7 @@ contract('Polling', (accounts) => {
 
     it('should add initiative for organisation', async() => {
         // create organisation
-        const tx = await createOrgranisation()
+        const tx = await createOrganisation()
         const organisationId = tx.logs[0].args.organisationId.toNumber()
 
         // add constituent 
@@ -86,7 +87,7 @@ contract('Polling', (accounts) => {
 
     it('should allow constituent to vote for ballotOption in initiative for organisation', async() => {
         // create organisation
-        const tx = await createOrgranisation()
+        const tx = await createOrganisation()
         const organisationId = tx.logs[0].args.organisationId.toNumber()
 
         // add constituent 
@@ -114,7 +115,7 @@ contract('Polling', (accounts) => {
 
     it('should allow to get an initiative result for organisation', async() => {
         // create organisation
-        const tx = await createOrgranisation()
+        const tx = await createOrganisation()
         const organisationId = tx.logs[0].args.organisationId.toNumber()
 
         // add constituent 
