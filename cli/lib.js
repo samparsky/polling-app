@@ -11,12 +11,11 @@ const a8 = {
     invoke: async function(params, app=`samparsky.title`){
         const options = JSON.stringify(params)
         const response = await exec(`a8 invoke ${app} '${options}'`).catch(console.log)
-        console.log({ response })
         return JSON.parse(response.stdout)
     }
 }
 
-module.exports = function( httpProvider, websocketProvider, contractAddress) {
+module.exports = function( contractAddress) {
     // const a8 = new a8Connect({port: 3035})
     const provider = ethers.getDefaultProvider('goerli');
     let wallet
@@ -43,7 +42,6 @@ module.exports = function( httpProvider, websocketProvider, contractAddress) {
             console.log(colors.gray(`transaction hash ${transactionHash}`))
             const spinner = ora('Waiting for transaction to be mined..');
             spinner.start()
-            
             const eventFilter = pollingContract.filters[event](...filter)
 
             pollingContract.once(eventFilter, function(){
@@ -59,7 +57,6 @@ module.exports = function( httpProvider, websocketProvider, contractAddress) {
                     command,
                     account,
                     contractAddress, 
-                    httpProvider,
                     args
                 })
 

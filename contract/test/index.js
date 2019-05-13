@@ -18,7 +18,6 @@ contract('Polling', (accounts) => {
 
     before(async() => {
         polling = await Polling.deployed()
-        console.log({ polling })
         // snapId = await takeSnapshot();
     })
 
