@@ -1,6 +1,6 @@
-const fdk=require('./node_modules/@autom8/fdk');
-const a8=require('./node_modules/@autom8/js-a8-fdk')
-const { utils, Contract, getDefaultProvider, providers } = require('./node_modules/ethers')
+const fdk=require('@autom8/fdk');
+const a8=require('@autom8/js-a8-fdk')
+const { utils, Contract, getDefaultProvider, providers } = require('ethers')
 const fetch = require('node-fetch')
 const abi = require('./Polling.json.js.js')
 
