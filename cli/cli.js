@@ -36,7 +36,7 @@ program
   .description('get result for an initiative')
   .action(getInitiativeResult)
 
-const contractAddress = '0x7cC4B1851c35959D34e635A470F6b5C43bA3C9c9'
+const contractAddress = '0x98f8b3425a3ff787429a3f27a357e6a6bbf8bd79'
 const lib = require('./lib')( program.httpProvider, program.websocketProvider, contractAddress)
 program.parse(process.argv);
 
@@ -131,41 +131,7 @@ async function removeConstituent(orgId, constituentAddress, args){
     httpProvider: program.httpProvider
   })
 
-  // const { privateKey, address } = await lib.getAccount(program).catch(logError)
-
-  // const tx = await lib.removeConstituent({ 
-  //   orgId,
-  //   constituentAddress,
-  //   contractAddress, 
-  //   account: address, 
-  //   network: '*',
-  //   provider: program.httpProvider
-  // })
-
-  // console.log(colors.green(`✔ Succesfully created the transaction`))
-
-  // const { rawTransaction, transactionHash } = await lib.signTransaction({ tx, privateKey })
-  // await lib.broadcast({ signedTx: rawTransaction })
-
-  // console.log(colors.green(`✔ Succesfully broadcasted the transaction`))
-  // console.log(colors.gray(`check transaction status at \nhttps://rinkeby.etherscan.io/tx/${transactionHash}.. `))
-
-  // const displayResult = (event) => {
-  //   const { organisationId, constituent } = event.returnValues
-  //   console.log(colors.green(`✓ Succesfully removed constituent from oragnisation ${orgId}`))
-  //   console.log(colors.green(`\nOrganisation ID = ${organisationId.toString()}`))
-  //   console.log(colors.green(`\nConstituent   = ${constituent}\n`))
-  // }
-  //  // watch for mined event and exit
-  //  await lib.subscribeEvent('RemoveConstituent', { organisationId: orgId }, displayResult, logError, transactionHash)
-
-
 }
-/**
- * 
-
- { initiativeTitle: 'one', ballotOptions: [1,2,3,4], expiryTime: 1556700062459 }
- */
 
 async function addInitiative(orgId, initiative){
   const { privateKey, address } = await lib.getAccount(program).catch(logError)
@@ -192,60 +158,6 @@ async function addInitiative(orgId, initiative){
     successTitle: '✓ Succesfully created initiative for organisation',
     httpProvider: program.httpProvider
   })
-
-  // const { privateKey, address } = await lib.getAccount(program).catch(logError)
-
-  // const {
-  //   initiativeTitle, 
-  //   ballotOptions,
-  //   expiryTime, 
-  //   number_of_votes_allowed=0, 
-  //   allowAnyOne=false,
-  // } = JSON.parse(initiative)
-  
-  // assert.ok(orgId)
-  // assert.ok(initiativeTitle)
-  // assert.ok(Array.isArray(ballotOptions))
-  // assert.ok(expiryTime > 0)
-
-  // const tx = await lib.addInitiative({
-  //   orgId, 
-  //   initiativeTitle, 
-  //   ballotOptions, 
-  //   expiryTime, 
-  //   number_of_votes_allowed, 
-  //   allowAnyOne,
-  //   contractAddress, 
-  //   account: address, 
-  //   network: '*',
-  //   provider: program.httpProvider
-  // })
-
-  // console.log(colors.green(`✔ Succesfully created the transaction`))
-
-  // const { rawTransaction, transactionHash } = await lib.signTransaction({ tx, privateKey })
-  // await lib.broadcast({ signedTx: rawTransaction })
-
-  // console.log(colors.green(`✔ Succesfully broadcasted the transaction`))
-  // console.log(colors.gray(`check transaction status at \nhttps://rinkeby.etherscan.io/tx/${transactionHash}.. `))
-
-  // const displayResult = (event) => {
-  //   const { organisationId, initiativeId,initiativeTitle, expiryTime, number_of_votes_allowed, _ballotOptions } = event.returnValues
-  //   console.log(colors.green(`✓ Succesfully created initiative for oragnisation ${orgId}`))
-  //   console.table(
-  //     [{ 
-  //       organisationId: organisationId.toNumber(), 
-  //       initiativeId: initiativeId.toNumber(), 
-  //       initiativeTitle, 
-  //       expiryTime: expiryTime.toNumber(), 
-  //       number_of_votes_allowed: number_of_votes_allowed.toNumber() , 
-  //       ballotOptions: _ballotOptions.map(item => item.toNumber()).toString()  }]  )
-  //   // console.log(colors.green(`\nConstituent   = ${constituent}\n`))
-  // }
-
-  // // watch for mined event and exit
-  // await lib.subscribeEvent('AddInitiative', { organisationId: orgId }, displayResult, logError, transactionHash)
-
 }
 
 async function vote(orgId, initiativeId, choice){
@@ -266,39 +178,6 @@ async function vote(orgId, initiativeId, choice){
     successTitle: `✓ Succesfully voted for initiative ${initiativeId} in organisation`,
     httpProvider: program.httpProvider
   })
-
-  
-  // const { privateKey, address } = await lib.getAccount(program).catch(logError)
-
-  // const tx = await lib.vote({
-  //   orgId, 
-  //   initiativeId, 
-  //   choice,
-  //   contractAddress, 
-  //   account: address, 
-  //   network: '*',
-  //   provider: program.httpProvider
-  // })
-
-  // console.log(colors.green(`✔ Succesfully created the transaction`))
-
-  // const { rawTransaction, transactionHash } = await lib.signTransaction({ tx, privateKey })
-  // await lib.broadcast({ signedTx: rawTransaction })
-
-  // console.log(colors.green(`✔ Succesfully broadcasted the transaction`))
-  // console.log(colors.gray(`check transaction status at \nhttps://rinkeby.etherscan.io/tx/${transactionHash}.. `))
-  // const displayResult = (event) => {
-  //   const { organisationId, voter, success } = event.returnValues
-  //   console.log(colors.green(`✓ Succesfully voted for initiative ${initiativeId} in organisation ${orgId}`))
-  //   console.table([
-  //     {
-  //       organisationId, voter, success
-  //     }
-  //   ])
-  // }
-  //  // watch for mined event and exit
-  //  await lib.subscribeEvent('Vote', { organisationId: orgId, voter: address }, displayResult, logError, transactionHash)
-
 }
 
 async function getInitiativeResult(orgId, initiativeId, args) {
@@ -320,6 +199,7 @@ async function getInitiativeResult(orgId, initiativeId, args) {
   const result = {}
 
   const votes = data['0'].map((choice, index) => result[index+1] = new Vote(parseInt(choice._hex, 16), parseInt(data['1'][index]._hex, 16)))
+
   spinner.stop()
   console.table(result)
 
