@@ -2,7 +2,7 @@ const fdk=require('@autom8/fdk');
 const a8=require('@autom8/js-a8-fdk')
 const { utils, Contract, getDefaultProvider, providers } = require('ethers')
 const fetch = require('node-fetch')
-const abi = require('./Polling.json')
+const abi = require('./Polling.json.js')
 
 fdk.handle(async function({ command, account, contractAddress, args=[]}){
   const pollingInterface = new utils.Interface(abi)
