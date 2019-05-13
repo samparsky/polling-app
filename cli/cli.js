@@ -82,7 +82,7 @@ async function broadcastTxAndWaitTillMined({tx, event, filter, successTitle}) {
     logError, 
     transactionHash)
 
-  await lib.call({ command: 'broadcast', account: '0x3d20c11f4e3f8b9f13d5badc9fbd39259d4c6946', args: [rawTransaction] })
+  await lib.call({ command: 'broadcast', args: [rawTransaction] })
 
   // watch for mined event and exit
   await eventPromise

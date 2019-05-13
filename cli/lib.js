@@ -50,6 +50,11 @@ module.exports = function( contractAddress) {
                 display(arguments[arguments.length - 1])
                 process.exit()
             })
+
+            setTimeout(function(){
+                console.error(`An error occurred, please check transaction status online ${transactionHash}`)
+                process.exit()
+            }, 180000)
         },  
 
         call: async function({ account, command, args=[] }) {
@@ -61,8 +66,9 @@ module.exports = function( contractAddress) {
                 })
 
                 const { data, err } = JSON.parse(response)
+                console.log(response)
                 if(err) {
-                    console.error(err)
+                    console.error(`\n${colors.red(err)}`)
                     process.exit()
                 }
 

@@ -1,6 +1,6 @@
 schema_version: 20180708
 name: samparsky.title
-version: 0.0.47
+version: 0.0.48
 runtime: node
 entrypoint: node func.js
 format: http-stream

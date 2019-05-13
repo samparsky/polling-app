@@ -16,7 +16,6 @@ fdk.handle(async function({ command, account, contractAddress, args=[]}){
       const result = await contract.getInitiativeResult(...args)
       data.data = result
     } else if(command === 'broadcast') {
-      data.balance = (await provider.getBalance(account)).toString()
       data.data = await provider.sendTransaction(args[0])
     } else {
       const { safeLow } = await fetch('https://ethgasstation.info/json/ethgasAPI.json').then(res => res.json())
