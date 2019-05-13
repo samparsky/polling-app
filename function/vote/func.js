@@ -2,7 +2,7 @@ const fdk=require('@autom8/fdk');
 const a8=require('@autom8/js-a8-fdk')
 const fetch = require('node-fetch')
 const Web3 = require('web3')
-const abi = require('./Polling.json')
+const abi = require('./Polling.json.js')
 
 fdk.handle(function({
   orgId, 

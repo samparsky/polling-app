@@ -1,26 +1,6 @@
 {
     "version": "0.0.1",
-    "chain": "ethereum",
-    "keystore": {
-        "ethereum": null,
-        "eos": null
-    },
-    "contractAddress": {
-        "ethereum": {
-            "testnet": "",
-            "rinkeby": "",
-            "mainnet": ""
-        }
-    },
-    "gateway": {
-        "ethereum": {
-            "createOrganisation": "http://",
-            "broadcast": "http",
-            "add_constituent": "",
-            "remove_constituent": "",
-            "add_initiative": "",
-            "vote": "",
-            "get_result": ""
-        }
-    }
+    "keystore": "",
+    "contractAddress": "",
+    "httpProvider": ""
 }

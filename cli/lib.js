@@ -1,200 +1,82 @@
 const Web3 = require('web3')
-const assert = require('assert')
-const fetch = require('node-fetch')
 const abi = require('./Polling.json');
-const Spinner = require('cli-spinner').Spinner;
+// const a8Connect = require('@autom8/js-a8-connect')
+const util = require('util')
+const colors = require('colors')
+const exec = util.promisify(require('child_process').exec)
+const ora = require('ora');
 
+const a8 = {
+    invoke: async function(params, app=`samparsky.title`){
+        const options = JSON.stringify(params)
+        const response = await exec(`a8 invoke ${app} '${options}'`).catch(console.log)
+        console.log({ response })
+        return JSON.parse(response.stdout)
+    }
+}
 
-module.exports = function( httpProvider, websocketProvider, contractAddress ) {
+module.exports = function( httpProvider, websocketProvider, contractAddress, network=1337 ) {
     const web3 = new Web3(new Web3.providers.HttpProvider(httpProvider))
     const wsWeb3 =  new Web3(new Web3.providers.WebsocketProvider(websocketProvider))
     const pollingContract = new wsWeb3.eth.Contract(abi, contractAddress)
+    
+    // const a8 = new a8Connect({port: 3035})
 
     return {
+        signTransaction: async function({ privateKey, tx }) {
+            const { rawTransaction } =  await web3.eth.accounts.signTransaction(tx, privateKey)
+            const  transactionHash = web3.utils.sha3(rawTransaction, { encoding: "hex" });
 
-    signTransaction: async function({ privateKey, tx }) {
-        const { rawTransaction } =  await web3.eth.accounts.signTransaction(tx, privateKey)
-        const  transactionHash = web3.utils.sha3(rawTransaction, { encoding: "hex" });
+            return { rawTransaction, transactionHash }
+        },
 
-        return { rawTransaction, transactionHash }
-    },
+        subscribeEvent: async function(event, filter, display, logError, transactionHash ) {
+            console.log(colors.gray(`transaction hash ${transactionHash}`))
+            const spinner = ora('Waiting for transaction to be mined..');
+            spinner.start()
 
-    subscribeEvent: async function(event, filter, display, logError, transactionHash ) {
-        const spinner = new Spinner(`\n %s Waiting for transaction to be mined..\n`);
-        spinner.start();
-      
-        pollingContract.events[event]({
-            filter,
-        }, function(error, event) {
-            spinner.stop();
-            spinner.clearLine()
-
-            if(error){
-                logError(error)
-            } else {
-                display(event)
-            }
-
+            pollingContract.events[event]({
+                filter,
+            }, function(error, event) {
+                spinner.stop();
+                // console.log({ error })
+                // console.log({ event })
+                if(error){
+                    logError(error)
+                } else {
+                    display(event)
+                }
             process.exit()
-        })
-    },
 
-    getAccount: async function ({ keystore, password, provider }){
-        const web3 = new Web3(new Web3.providers.HttpProvider(provider))
-        // load keystore json file
-        const loadKeystore = require(keystore)
-        return web3.eth.accounts.decrypt(loadKeystore, password)
-    },      
+            })
+        },
 
-    createOrganisation: async function({ account, contractAddress, provider }){
-        const Web3 = require('web3')
-        const web3 = new Web3(new Web3.providers.HttpProvider(provider))
+        getAccount: async function ({ keystore, password, provider }){
+            const web3 = new Web3(new Web3.providers.HttpProvider(provider))
+            // load keystore json file
+            const loadKeystore = require(keystore)
+            return web3.eth.accounts.decrypt(loadKeystore, password)
+        },      
 
-        // get gas price
-        const { fast } = await fetch('https://ethgasstation.info/json/ethgasAPI.json').then(res => res.json())
-        const nonce = await web3.eth.getTransactionCount(account)
-        const pollingContract = new web3.eth.Contract(abi, contractAddress)
-        const calldata = await pollingContract.methods.createOrganisation().encodeABI()
-        const gasLimit = await pollingContract.methods.createOrganisation().estimateGas()
+        call: async function({ account, command, args=[] }) {
+                const { response } = await a8.invoke({
+                    command,
+                    account,
+                    contractAddress, 
+                    httpProvider,
+                    args
+                })
 
-        return {
-            nonce,
-            gasPrice: fast,
-            gasLimit,
-            to: contractAddress,
-            value: '0x00', 
-            data: calldata,
-            chainId: 1337
-        }
+                const { data, err } = JSON.parse(response)
+                if(err) {
+                    console.error(err)
+                    process.exit()
+                }
 
-    },
-
-    addConstituent: async function({ orgId, constituentAddress, account, contractAddress, provider}) {
-        const { fast } = await fetch('https://ethgasstation.info/json/ethgasAPI.json').then(res => res.json())
-        const nonce = await web3.eth.getTransactionCount(account)
-        const pollingContract = new web3.eth.Contract(abi, contractAddress)
-        const calldata = await pollingContract.methods.addConstituent(orgId, constituentAddress).encodeABI()
-        const gasLimit = await pollingContract.methods.addConstituent(orgId, constituentAddress).estimateGas()
-
-        return {
-            nonce,
-            gasPrice: fast,
-            gasLimit,
-            to: contractAddress,
-            value: '0x00', 
-            data: calldata,
-            chainId: 1337
-        }
-    },
-    removeConstituent: async function({ orgId, constituentAddress, account, contractAddress, provider='ropsten'}) {
-        const { fast } = await fetch('https://ethgasstation.info/json/ethgasAPI.json').then(res => res.json())
-        const nonce = await web3.eth.getTransactionCount(account)
-        const pollingContract = new web3.eth.Contract(abi, contractAddress)
-        const calldata = await pollingContract.methods.removeConstituent(orgId, constituentAddress).encodeABI()
-        const gasLimit = await pollingContract.methods.removeConstituent(orgId, constituentAddress).estimateGas()
-
-        return {
-            nonce,
-            gasPrice: fast,
-            gasLimit,
-            to: contractAddress,
-            value: '0x00', 
-            data: calldata,
-            chainId: 1337
-        }
-    },
-    addInitiative: async function({
-        orgId, 
-        initiativeTitle, 
-        ballotOptions, 
-        expiryTime, 
-        number_of_votes_allowed, 
-        allowAnyOne,
-        contractAddress, 
-        account, 
-        provider
-      }) {
-        const { fast } = await fetch('https://ethgasstation.info/json/ethgasAPI.json').then(res => res.json())
-        const nonce = await web3.eth.getTransactionCount(account)
-        const pollingContract = new web3.eth.Contract(abi, contractAddress, { gasPrice: fast, defaultAccount: account })
-        const calldata = await pollingContract.methods.addInitiative(
-            orgId, 
-            initiativeTitle, 
-            ballotOptions, 
-            expiryTime, 
-            number_of_votes_allowed, 
-            allowAnyOne
-        ).encodeABI()
-
-        const gasLimit = await pollingContract.methods.addInitiative(
-            orgId, 
-            initiativeTitle, 
-            ballotOptions, 
-            expiryTime, 
-            number_of_votes_allowed, 
-            allowAnyOne
-        ).estimateGas()
-
-        return {
-            nonce,
-            gasPrice: fast,
-            gasLimit,
-            to: contractAddress,
-            value: '0x00', 
-            data: calldata,
-            chainId: 1337
-        }
-
-    },
-    vote: async function({
-        orgId, 
-        initiativeId,
-        choice,
-        contractAddress, 
-        account, 
-        provider
-    }) {
-        const { fast } = await fetch('https://ethgasstation.info/json/ethgasAPI.json').then(res => res.json())
-        const nonce = await web3.eth.getTransactionCount(account)
-        const pollingContract = new web3.eth.Contract(abi, contractAddress, { gasPrice: fast, defaultAccount: account })
-        const calldata = await pollingContract.methods.vote(orgId, initiativeId, choice).encodeABI()
-        const gasLimit = await pollingContract.methods.vote(orgId, initiativeId, choice).estimateGas()
-
-        return {
-            nonce,
-            gasPrice: fast,
-            gasLimit,
-            to: contractAddress,
-            value: '0x00', 
-            data: calldata,
-            chainId: 1337
-        }
-    },
-    getInitiativeResult: async function({
-        orgId, 
-        initiativeId,
-        contractAddress, 
-        account, 
-        provider
-    }) {
-        const { fast } = await fetch('https://ethgasstation.info/json/ethgasAPI.json').then(res => res.json())
-        const pollingContract = new web3.eth.Contract(abi, contractAddress, { gasPrice: fast, defaultAccount: account })
-        const result = await pollingContract.methods.getInitiativeResult(orgId, initiativeId).call()
-        return result
-    },
-
-    broadcast: async function({ signedTx, provider}) {
-        const Web3 = require('web3')
-        const web3 = new Web3(new Web3.providers.HttpProvider(provider))
-
-        // assert
-        assert.ok(signedTx.startsWith('0x'), 'signed transaction should start with 0x')
-
-        await web3.eth.sendSignedTransaction(signedTx)
-        .on('error', function(err){
-            console.error(err)
-            process.exit()
-        })
+                return {
+                    ...data,
+                    chainId: 1337
+                }
+        },
     }
-}
 }
