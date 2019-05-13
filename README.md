@@ -2,19 +2,23 @@
 
 This is sample application built using A8 decentralised serverless platform and Ethereum
 
-# Infura.io
-
-# Goerli Testnet
+###  Goerli Testnet
 
 The contract has been deployed on the goerli testnet.
   
 Contract Address: 0x98f8b3425a3ff787429a3f27a357e6a6bbf8bd79
 Get goerli testnet ether from https://faucet.goerli.mudit.blog/
 
+### Requirements
+* NodeJS
+#### Install A8 platform
+
+Details to install a8 can be found here https://gitlab.com/autom8.network/docs
 
 # Commands
 
 ### Create Organisation
+
 ```sh
 ./cli.js --keystore ./keystore.json --password test create_organisation
 ```

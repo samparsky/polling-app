@@ -1,5 +1,6 @@
-const Web3 = require('web3')
+const web3 = require('web3')
 const abi = require('./Polling.json');
+const ethers = require('ethers')
 // const a8Connect = require('@autom8/js-a8-connect')
 const util = require('util')
 const colors = require('colors')
@@ -15,48 +16,43 @@ const a8 = {
     }
 }
 
-module.exports = function( httpProvider, websocketProvider, contractAddress, chainId=5 ) {
-    const web3 = new Web3(new Web3.providers.HttpProvider(httpProvider))
-    const wsWeb3 =  new Web3(new Web3.providers.WebsocketProvider(websocketProvider))
-    const pollingContract = new wsWeb3.eth.Contract(abi, contractAddress)
-    
+module.exports = function( httpProvider, websocketProvider, contractAddress) {
     // const a8 = new a8Connect({port: 3035})
+    const provider = ethers.getDefaultProvider('goerli');
+    let wallet
 
     return {
-        signTransaction: async function({ privateKey, tx }) {
-            const { rawTransaction } =  await web3.eth.accounts.signTransaction(tx, privateKey)
-            const  transactionHash = web3.utils.sha3(rawTransaction, { encoding: "hex" });
+        signTransaction: async function(tx) {
+            if(!wallet){
+                console.error('wallet not unlocked')
+                process.exit()
+            }
+             const rawTransaction = await wallet.sign(tx)
+            const  transactionHash = ethers.utils.keccak256(rawTransaction);
 
             return { rawTransaction, transactionHash }
         },
-
+        getAccount: async function({ keystore, password }){
+            const loadKeystore = require(keystore)
+            wallet = await ethers.Wallet.fromEncryptedJson(JSON.stringify(loadKeystore), password)
+            return wallet.address
+        }, 
         subscribeEvent: async function(event, filter, display, logError, transactionHash ) {
+            const pollingContract = new ethers.Contract(contractAddress, abi, provider)
+
             console.log(colors.gray(`transaction hash ${transactionHash}`))
             const spinner = ora('Waiting for transaction to be mined..');
             spinner.start()
+            
+            const eventFilter = pollingContract.filters[event](...filter)
 
-            pollingContract.events[event]({
-                filter,
-            }, function(error, event) {
+            pollingContract.once(eventFilter, function(){
                 spinner.stop();
-                // console.log({ error })
-                // console.log({ event })
-                if(error){
-                    logError(error)
-                } else {
-                    display(event)
-                }
-            process.exit()
-
+                // last argument is event object
+                display(arguments[arguments.length - 1])
+                process.exit()
             })
-        },
-
-        getAccount: async function ({ keystore, password, provider }){
-            const web3 = new Web3(new Web3.providers.HttpProvider(provider))
-            // load keystore json file
-            const loadKeystore = require(keystore)
-            return web3.eth.accounts.decrypt(loadKeystore, password)
-        },      
+        },  
 
         call: async function({ account, command, args=[] }) {
                 const { response } = await a8.invoke({
@@ -75,7 +71,6 @@ module.exports = function( httpProvider, websocketProvider, contractAddress, cha
 
                 return {
                     ...data,
-                    chainId
                 }
         },
     }

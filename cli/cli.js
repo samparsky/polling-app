@@ -38,7 +38,7 @@ program
   .action(getInitiativeResult)
 
 const contractAddress = getContractAddress()
-const lib = require('./lib')( program.httpProvider, program.websocketProvider, contractAddress, program.chainId)
+const lib = require('./lib')( program.httpProvider, program.websocketProvider, contractAddress)
 program.parse(process.argv);
 
 function logError(e){
@@ -46,15 +46,21 @@ function logError(e){
   process.exit()
 }
 
-function displayResult(title) {
+function displayResult(title, property) {
   return function(event) {
     console.log(colors.green(`${title}`))
-    // console.log({ event })
-    console.table([
-      {
-        ...event.returnValues
+    console.log({ event })
+    const result = {}
+    
+    property.forEach(function(ppty){
+      if(typeof event.args[ppty] == 'string'){
+        result[ppty] = event.args[ppty]
+      } else {
+        result[ppty] = parseInt(event.args[ppty]._hex, 16)
       }
-    ])
+    })
+
+    console.table(result)
   }
 }
 
@@ -63,37 +69,36 @@ function getContractAddress(chain, network){
   return '0x98f8b3425a3ff787429a3f27a357e6a6bbf8bd79'
 }
 
-async function broadcastTxAndWaitTillMined({tx, privateKey, event, filter, successTitle, httpProvider}) {
+async function broadcastTxAndWaitTillMined({tx, event, filter, successTitle, httpProvider}) {
   console.log(colors.green(`✔ Succesfully created the transaction`))
-
-  const { rawTransaction, transactionHash } = await lib.signTransaction({ tx, privateKey })
+  const { rawTransaction, transactionHash } = await lib.signTransaction(tx)
   // watch for mined event and exit
   const eventPromise = lib.subscribeEvent(
     event,
     filter, 
-    displayResult(successTitle), 
+    displayResult(successTitle, ['creator', 'organisationId']), 
     logError, 
     transactionHash)
+
     console.log({ rawTransaction })
-  await lib.call({ command: 'broadcast', args: [rawTransaction] })
+  await lib.call({ command: 'broadcast', account: '0x3d20c11f4e3f8b9f13d5badc9fbd39259d4c6946', args: [rawTransaction] })
 
   // watch for mined event and exit
   await eventPromise
 }
 
 async function createOrganisation() {
-  const { privateKey, address } = await lib.getAccount(program).catch(logError)
+  const address = await lib.getAccount(program).catch(logError)
 
-  const tx = await lib.call({ 
+  const tx = await lib.call({
     command: 'createOrganisation',
     account: address, 
   })
 
   await broadcastTxAndWaitTillMined({
     tx,
-    privateKey,
     event: 'CreateOrganisation',
-    filter: { creator: address },
+    filter: [address],
     successTitle: '✓ Succesfully created organisation',
     httpProvider: program.httpProvider
   })
