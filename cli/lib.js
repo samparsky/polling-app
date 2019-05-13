@@ -66,7 +66,6 @@ module.exports = function( contractAddress) {
                 })
 
                 const { data, err } = JSON.parse(response)
-                console.log(response)
                 if(err) {
                     console.error(`\n${colors.red(err)}`)
                     process.exit()
