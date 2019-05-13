@@ -19,9 +19,23 @@ Details to install a8 can be found here https://gitlab.com/autom8.network/docs
 
 ### Create Organisation
 
+Create an organisation
+
 ```sh
 ./cli.js --keystore ./keystore.json --password <password> create_organisation
+
+✔ Succesfully created the transaction
+transaction hash 0xc17ac70c34076f2085cfcd12b4576beaefcd40816eda7722ac40f5c229c8799c
+✓ Succesfully created organisation
+
+┌────────────────┬──────────────────────────────────────────────┐
+│    (index)     │                    Values                    │
+├────────────────┼──────────────────────────────────────────────┤
+│    creator     │ '0x3d20C11F4E3F....'                         │
+│ organisationId │                      6                       │
+└────────────────┴──────────────────────────────────────────────┘
 ```
+
 
 ### Add Constituent
 
@@ -31,13 +45,25 @@ Details to install a8 can be found here https://gitlab.com/autom8.network/docs
 
 Params
 
-constituentAddress : comma separated list of constituent address
+`constituentAddress : comma separated list of constituent address`
 
-orgId : Organsation id
+`orgId : Organsation id`
 
-example
+Example
+
 ```sh
-./cli.js --keystore ./keystore.json --password <password> add_constituent 17 0x9ace976f2f06f2d2815a93f1866011007171fdb2,0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe
+./cli.js --keystore ./keystore.json --password <password> add_constituent 5 0x3d20C11F4E3F8B9F13d5BAdc9fBD39259d4C6946
+
+✔ Succesfully created the transaction
+transaction hash 0x118fb0eace8380884...
+✓ Succesfully added constituent(s) to oragnisation
+
+┌────────────────┬──────────────────────────────────────────────┐
+│    (index)     │                    Values                    │
+├────────────────┼──────────────────────────────────────────────┤
+│ organisationId │                      5                       │
+│  constituents  │ '0x3d20C11F4E3F8B9F13d5BAdc9fBD39259d4C6946' │
+└────────────────┴──────────────────────────────────────────────┘
 ```
 
 ### Remove Constituent
@@ -45,20 +71,51 @@ example
 ```sh
 ./cli.js --keystore ./keystore.json --password <password> remove_constituent <orgId> <constituentAddress>
 ```
-example
+
+Example
+
 ```sh
-./cli.js --keystore ./keystore.json --password <password> remove_constituent 17 0x9ace976f2f06f2d2815a93f1866011007171fdb2
+./cli.js --keystore ./keystore.json --password <password> remove_constituent 5 0x3d20C11F4E3F8B9F13d5BAdc9fBD39259d4C6946
+
+✔ Succesfully created the transaction
+transaction hash 0xcff57bf27f15c99ad1d5....
+✓ Succesfully removed constituent from oragnisation
+┌────────────────┬──────────────────────────────────────────────┐
+│    (index)     │                    Values                    │
+├────────────────┼──────────────────────────────────────────────┤
+│ organisationId │                      5                       │
+│  constituent   │ '0x3d20C11F4E3F8B9F13d5BAdc9fBD39259d4C6946' │
+└────────────────┴──────────────────────────────────────────────┘
+
 ```
 
 ### Add Initiative
 
 ```sh
 ./cli.js --keystore ./keystore.json --password <password> add_initiative <OrgId> <intiative> (in json format )
+
 ```
 
-example
+Example
+
 ```sh
-./cli.js --keystore ./keystore.json --password <password> add_initiative 41 '{"initiativeTitle":"one","ballotOptions":[1,2,3,4],"expiryTime":1556700062459,"allowAnyOne": true}'
+./cli.js --keystore ./keystore.json --password <password> add_initiative 5 '{"initiativeTitle":"one","ballotOptions":[1,2,3,4],"expiryTime":1556700062459,"allowAnyOne": true}'
+
+✔ Succesfully created the transaction
+transaction hash 0xdc07ffb3611438733091e5d91bb742ae4ed4..
+✓ Succesfully created initiative for organisation
+
+┌─────────────────────────┬───────────────┐
+│         (index)         │    Values     │
+├─────────────────────────┼───────────────┤
+│     organisationId      │       5       │
+│      initiativeId       │       1       │
+│     initiativeTitle     │     'one'     │
+│       expiryTime        │ 1556700062459 │
+│ number_of_votes_allowed │       0       │
+│     _ballotOptions      │   '1,2,3,4'   │
+└─────────────────────────┴───────────────┘
+
 ```
 
 ### Vote
@@ -67,9 +124,19 @@ example
 ./cli.js --keystore ./keystore.json --password <password> vote <OrgId> <InitiativeId> <choice>
 ```
 
-example
+Example
+
 ```sh
 ./cli.js --keystore ./keystore.json --password <password> vote 17 0 1
+
+┌────────────────┬──────────────────────────────────────────────┐
+│    (index)     │                    Values                    │
+├────────────────┼──────────────────────────────────────────────┤
+│ organisationId │                      5                       │
+│     voter      │ '0x3d20C11F4E3F8B9F13d5BAdc9fBD39259d4C6946' │
+│    success     │                    'true'                    │
+└────────────────┴──────────────────────────────────────────────┘
+
 ```
 
 ### Get Vote Result
@@ -79,10 +146,21 @@ example
 ```
 
 ##### Params
-Organisation id
-Initiative Id
+`organisation id`
+`initiative Id`
 
-example
+Example
+
 ```sh
 ./cli.js --keystore ./keystore.json --password <password> get_result 17 0
+
+┌─────────┬────────┬───────┐
+│ (index) │ choice │ votes │
+├─────────┼────────┼───────┤
+│    1    │   1    │   1   │
+│    2    │   2    │   0   │
+│    3    │   3    │   0   │
+│    4    │   4    │   0   │
+└─────────┴────────┴───────┘
+
 ```
