@@ -15,7 +15,7 @@ const a8 = {
     }
 }
 
-module.exports = function( httpProvider, websocketProvider, contractAddress, network=1337 ) {
+module.exports = function( httpProvider, websocketProvider, contractAddress, chainId=5 ) {
     const web3 = new Web3(new Web3.providers.HttpProvider(httpProvider))
     const wsWeb3 =  new Web3(new Web3.providers.WebsocketProvider(websocketProvider))
     const pollingContract = new wsWeb3.eth.Contract(abi, contractAddress)
@@ -75,7 +75,7 @@ module.exports = function( httpProvider, websocketProvider, contractAddress, net
 
                 return {
                     ...data,
-                    chainId: 1337
+                    chainId
                 }
         },
     }

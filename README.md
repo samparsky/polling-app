@@ -26,7 +26,9 @@ Get goerli testnet ether from https://faucet.goerli.mudit.blog/
 ```
 
 Params
+
 constituentAddress : comma separated list of constituent address
+
 orgId : Organsation id
 
 example

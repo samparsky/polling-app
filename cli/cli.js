@@ -7,8 +7,9 @@ const ora = require('ora')
 program
   .version('0.1.0')
   .option('-n, --chain <chain>', 'default: ethereum', 'ethereum')
-  .option('-p, --httpProvider <provider>', 'http provider', 'http://ed7766d2.ngrok.io')
-  .option('-w, --websocketProvider <provider>', 'websocket provider', 'ws://localhost:8545')
+  .option('-p, --httpProvider <provider>', 'http provider', 'https://goerli.prylabs.net/')
+  .option('-w, --websocketProvider <provider>', 'websocket provider', 'wss://goerli.prylabs.net/websocket')
+  .option('-n, --chainId <chainId>', 'chain id', '5')
   .option('-k, --keystore <dir>', 'keystore location')
   .option('-p, --password <password>', 'keystore password')
 program
@@ -36,8 +37,8 @@ program
   .description('get result for an initiative')
   .action(getInitiativeResult)
 
-const contractAddress = '0x98f8b3425a3ff787429a3f27a357e6a6bbf8bd79'
-const lib = require('./lib')( program.httpProvider, program.websocketProvider, contractAddress)
+const contractAddress = getContractAddress()
+const lib = require('./lib')( program.httpProvider, program.websocketProvider, contractAddress, program.chainId)
 program.parse(process.argv);
 
 function logError(e){
@@ -55,6 +56,11 @@ function displayResult(title) {
       }
     ])
   }
+}
+
+function getContractAddress(chain, network){
+  // return default goerli address
+  return '0x98f8b3425a3ff787429a3f27a357e6a6bbf8bd79'
 }
 
 async function broadcastTxAndWaitTillMined({tx, privateKey, event, filter, successTitle, httpProvider}) {
